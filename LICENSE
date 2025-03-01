@@ -1,7 +1,163 @@
-Copyright (c) GitHub, Inc.
+입술: 02-28 21:36:39
+<!DOCTYPE html>
+<html>
+<head>
+    <title>抖音小游戏 - 障碍跳跃</title>
+    <style>
+        canvas {
+            border: 2px solid #000;
+            margin: 0 auto;
+            display: block;
+        }
+        body {
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div id="score" style="font-size: 24px; margin: 10px;">得分: 0</div>
+    <canvas id="gameCanvas" width="300" height="500"></canvas>
+    <button id="restart" style="display: none;">重新开始</button>
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const restartButton = document.getElementById('restart');
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+        // 游戏对象
+        const player = {
+            x: 150,
+            y: 400,
+            width: 30,
+            height: 30,
+            speed: 5,
+            isJumping: false
+        };
 
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+        let obstacles = [];
+        let score = 0;
+        let gameLoop;
+        let isGameOver = false;
+
+        // 控制监听
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'ArrowLeft') {
+                player.x -= player.speed * 2;
+            } else if (e.code === 'ArrowRight') {
+                player.x += player.speed * 2;
+            } else if (e.code === 'Space' && !player.isJumping) {
+                jump();
+            }
+        });
+
+        // 跳跃函数
+        function jump() {
+            player.isJumping = true;
+            let jumpHeight = 100;
+            let startY = player.y;
+            
+            const jumpInterval = setInterval(() => {
+                if (player.y > startY - jumpHeight) {
+                    player.y -= 5;
+                } else {
+                    clearInterval(jumpInterval);
+                    fall();
+                }
+            }, 10);
+        }
+
+        // 下落函数
+        function fall() {
+            const fallInterval = setInterval(() => {
+                if (player.y < 400) {
+                    player.y += 5;
+                } else {
+                    clearInterval(fallInterval);
+                    player.isJumping = false;
+                }
+            }, 10);
+        }
+
+        // 创建障碍物
+        function createObstacle() {
+            const obstacle = {
+                x: Math.random() * (canvas.width - 50),
+                y: 0,
+                width: 50,
+                height: 20,
+                speed: 3
+            };
+            obstacles.push(obstacle);
+        }
+
+        // 碰撞检测
+        function checkCollision(rect1, rect2) {
+            return rect1.x < rect2.x + rect2.width &&
+                   rect1.x + rect1.width > rect2.x &&
+                   rect1.y < rect2.y + rect2.height &&
+                   rect1.y + rect1.height > rect2.y;
+        }
+
+        // 游戏循环
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 绘制玩家
+            ctx.fillStyle = '#ff5252';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+
+            // 更新障碍物
+            obstacles.forEach((obstacle, index) => {
+                ctx.fillStyle = '#4CAF50';
+                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+                obstacle.y += obstacle.speed;
+
+                // 碰撞检测
+                if (checkCollision(player, obstacle)) {
+                    gameOver();
+                }
+
+                // 移除超出屏幕的障碍物
+                if (obstacle.y > canvas.height) {
+                    obstacles.splice(index, 1);
+                    score += 10;
+                    scoreElement.textContent = `得分: ${score}`;
+                }
+            });
+
+            // 定期生成障碍物
+            if (Math.random() < 0.02) {
+                createObstacle();
+            }
+        }
+
+        function gameOver() {
+            clearInterval(gameLoop);
+            isGameOver = true;
+            restartButton.style.display = 'block';
+            ctx.fillStyle = 'black';
+            ctx.font = '30px Arial';
+            ctx.fillText('游戏结束！', 80, 250);
+        }
+
+        // 初始化游戏
+        function initGame() {
+            player.y = 400;
+            obstacles = [];
+            score = 0;
+            isGameOver = false;
+            scoreElement.textContent = '得分: 0';
+            restartButton.style.display = 'none';
+            gameLoop = setInterval(update, 1000/60);
+        }
+
+        restartButton.addEventListener('click', initGame);
+        initGame()
+
+입술: 02-28 21:38:55
+</body>
+</html>*
+</body>
+</html>*
